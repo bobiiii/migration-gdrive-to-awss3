@@ -16,6 +16,9 @@ const varietySchema = new mongooose.Schema({
   varietyCardImage: {
     type: String,
   },
+  s3VarietyCardImage: {
+    type: String,
+  },
   s3FullSlabImage: {
     type: String,
   },
