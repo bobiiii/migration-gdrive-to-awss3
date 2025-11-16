@@ -13,10 +13,10 @@ async function migrate() {
     const collectionFolder = slugify(col.collectionName);
 
     for (const variety of col.variety) {
-      if (!variety.closeLookUp) continue;
+      if (!variety.fullSlabImage) continue;
 
       try {
-        const originalName = await getDriveFileName(variety.closeLookUp);
+        const originalName = await getDriveFileName(variety.fullSlabImage);
 
         const dotIndex = originalName.lastIndexOf(".");
         let baseName = dotIndex !== -1 ? originalName.substring(0, dotIndex) : originalName;
@@ -24,12 +24,12 @@ async function migrate() {
         baseName = baseName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9\-]/g, "");
 
         const varietyFolder = variety.varietyName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9\-]/g, "");
-        const finalFileName = `${baseName}-CL-${Math.floor(100 + Math.random() * 900)}${ext}`;
+        const finalFileName = `${baseName}-FS-${Math.floor(100 + Math.random() * 900)}${ext}`;
 
-        const buffer = await downloadFromDrive(variety.closeLookUp);
+        const buffer = await downloadFromDrive(variety.fullSlabImage);
         const s3Url = await uploadToS3(buffer, `${collectionFolder}/${varietyFolder}`, finalFileName);
 
-        variety.s3CloseLookUp = s3Url;
+        variety.s3FullSlabImage = s3Url;
         await col.save();
         console.log(`✔ Saved ${variety.varietyName}`);
       } catch (err) {
