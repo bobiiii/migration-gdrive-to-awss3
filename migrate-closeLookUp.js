@@ -16,28 +16,57 @@ async function migrate() {
       if (!variety.closeLookUp) continue;
 
       try {
-        const originalName = await getDriveFileName(variety.closeLookUp);
+        console.log("\n=======================================");
+        console.log(`Processing: ${col.collectionName} → ${variety.varietyName}`);
+        console.log(`Drive ID: ${variety.closeLookUp}`);
 
+        // Get Drive filename
+        const originalName = await getDriveFileName(variety.closeLookUp);
+        console.log(`Original Drive Filename: ${originalName}`);
+
+        // Build clean file name
         const dotIndex = originalName.lastIndexOf(".");
         let baseName = dotIndex !== -1 ? originalName.substring(0, dotIndex) : originalName;
         const ext = dotIndex !== -1 ? originalName.substring(dotIndex) : "";
         baseName = baseName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9\-]/g, "");
 
-        const varietyFolder = variety.varietyName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9\-]/g, "");
+        const varietyFolder = variety.varietyName
+          .toLowerCase()
+          .replace(/\s+/g, "-")
+          .replace(/[^a-z0-9\-]/g, "");
+
         const finalFileName = `${baseName}-CL-${Math.floor(100 + Math.random() * 900)}${ext}`;
 
-        const buffer = await downloadFromDrive(variety.closeLookUp);
-        const s3Url = await uploadToS3(buffer, `${collectionFolder}/${varietyFolder}`, finalFileName);
+        console.log(`Uploading as: ${collectionFolder}/${varietyFolder}/${finalFileName}`);
 
+        // Download from Google Drive
+        const buffer = await downloadFromDrive(variety.closeLookUp);
+        console.log(`Downloaded: ${buffer.length} bytes`);
+
+        // Upload to S3
+        const s3Url = await uploadToS3(
+          buffer,
+          `${collectionFolder}/${varietyFolder}`,
+          finalFileName
+        );
+
+        console.log(`Old URL: ${variety.s3CloseLookUp || "(none)"}`);
+        console.log(`New URL: ${s3Url}`);
+
+        // Save in DB
         variety.s3CloseLookUp = s3Url;
         await col.save();
+
         console.log(`✔ Saved ${variety.varietyName}`);
+
       } catch (err) {
         console.error(`⚠ Error for ${variety.varietyName}:`, err.message);
       }
     }
   }
 }
+
+
 
 // Run the migration if the file is executed directly
 if (require.main === module) {
