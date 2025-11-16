@@ -5,6 +5,7 @@ const { uploadToS3 } = require('./utils/s3');
 const { downloadFromDrive, getDriveFileName } = require('./utils/drive');
 const slugify = require('./utils/slugify');
 
+
 async function migrate() {
   await startDB();
   const collections = await collectionModel.find();
@@ -16,22 +17,49 @@ async function migrate() {
       if (!variety.instalLook) continue;
 
       try {
-        const originalName = await getDriveFileName(variety.instalLook);
+        console.log("\n=======================================");
+        console.log(`Processing: ${col.collectionName} → ${variety.varietyName}`);
+        console.log(`Drive ID: ${variety.instalLook}`);
 
+        // Get Drive filename
+        const originalName = await getDriveFileName(variety.instalLook);
+        console.log(`Original Drive Filename: ${originalName}`);
+
+        // Build clean file name
         const dotIndex = originalName.lastIndexOf(".");
         let baseName = dotIndex !== -1 ? originalName.substring(0, dotIndex) : originalName;
         const ext = dotIndex !== -1 ? originalName.substring(dotIndex) : "";
         baseName = baseName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9\-]/g, "");
 
-        const varietyFolder = variety.varietyName.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9\-]/g, "");
+        const varietyFolder = variety.varietyName
+          .toLowerCase()
+          .replace(/\s+/g, "-")
+          .replace(/[^a-z0-9\-]/g, "");
+
         const finalFileName = `${baseName}-IL-${Math.floor(100 + Math.random() * 900)}${ext}`;
 
-        const buffer = await downloadFromDrive(variety.instalLook);
-        const s3Url = await uploadToS3(buffer, `${collectionFolder}/${varietyFolder}`, finalFileName);
+        console.log(`Uploading as: ${collectionFolder}/${varietyFolder}/${finalFileName}`);
 
+        // Download from Google Drive
+        const buffer = await downloadFromDrive(variety.instalLook);
+        console.log(`Downloaded: ${buffer.length} bytes`);
+
+        // Upload to S3
+        const s3Url = await uploadToS3(
+          buffer,
+          `${collectionFolder}/${varietyFolder}`,
+          finalFileName
+        );
+
+        console.log(`Old URL: ${variety.s3InstalLook || "(none)"}`);
+        console.log(`New URL: ${s3Url}`);
+
+        // Save in DB
         variety.s3InstalLook = s3Url;
         await col.save();
+
         console.log(`✔ Saved ${variety.varietyName}`);
+
       } catch (err) {
         console.error(`⚠ Error for ${variety.varietyName}:`, err.message);
       }
