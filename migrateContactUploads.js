@@ -1,9 +1,9 @@
-const { startDB } = require('../DB');
-const contactModel = require('../models/contactModel');
+const { startDB } = require('./DB');
+const {contactModel} = require('./models');
 
-const { uploadToS3 } = require('../utils/s3');
-const { downloadFromDrive, getDriveFileName } = require('../utils/drive');
-const slugify = require('../utils/slugify');
+const { uploadToS3 } = require('./utils/s3');
+const { downloadFromDrive, getDriveFileName } = require('./utils/drive');
+const slugify = require('./utils/slugify');
 
 async function migrateContactUploads() {
   await startDB();
