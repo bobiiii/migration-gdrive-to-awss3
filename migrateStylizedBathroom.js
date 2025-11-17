@@ -188,7 +188,7 @@ async function migrateStylizedBathroom() {
 
 // run when executed directly
 if (require.main === module) {
-  migrateModernKitchen().catch(err => {
+  migrateStylizedBathroom().catch(err => {
     console.error('Fatal migration error:', err);
     process.exit(1);
   });
