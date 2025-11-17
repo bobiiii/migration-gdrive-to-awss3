@@ -48,6 +48,11 @@ const contactSchema = new mongooose.Schema(
       required: true,
       trim: true,
     },
+        s3Upload: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     checked: {
       type: Boolean,
     },
