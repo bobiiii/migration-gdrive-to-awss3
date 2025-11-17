@@ -16,11 +16,7 @@ async function migrateContactUploads() {
       continue;
     }
 
-    // If already migrated
-    if (item.s3Upload) {
-      console.log(`⏩ Already migrated: ${item._id}`);
-      continue;
-    }
+
 
     try {
       const originalName = await getDriveFileName(item.upload);
@@ -46,7 +42,7 @@ async function migrateContactUploads() {
 
       // Save to DB
       item.s3Upload = s3Url;
-      await item.save();
+      await item.save({ validateBeforeSave: false });
 
       console.log(`✔ Saved for contact: ${item._id}`);
     } catch (err) {
