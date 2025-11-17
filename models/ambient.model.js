@@ -14,7 +14,13 @@ const colorsSchema = new mongooose.Schema({
   colorCardImage: {
     type: String,
   },
+  s3ColorCardImage: {
+    type: String,
+  }, 
   mainImage: {
+    type: String,
+  },
+  s3MainImage: {
     type: String,
   },
 }, { timestamps: true });
@@ -37,6 +43,11 @@ const kitchenSchema = new mongooose.Schema(
       required: true,
     },
     cardImage: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    s3CardImage: {
       type: String,
       required: true,
       trim: true,
